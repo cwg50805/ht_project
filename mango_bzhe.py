@@ -134,13 +134,8 @@ nround = int(len(dev_labels) / BATCH_SIZE)
 name = np.array(dev_labels)[:,0]
 dev_y = np.array(dev_labels)[:,1]
 
-image = cv2.imread("/tmp2/b06902053/mango/C1-P1_Train/00282.jpg")
+image = cv2.imread("/tmp2/b06902053/mango/C1-P1_Train/00302.jpg")
 
-#print(image.shape)
-# cv2.imwrite("B.jpg", image[:,:,0])
-# cv2.imwrite("G.jpg", image[:,:,1])
-# cv2.imwrite("R.jpg", image[:,:,2])
-#.convert('RGB')
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 #gray = image[:,:,1]
@@ -152,7 +147,7 @@ blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 binaryIMG = cv2.Canny(blurred, 25, 40)
 #cv2.imwrite("canny.jpg", binaryIMG)
 
-binaryIMG = cv2.dilate(binaryIMG, None, iterations = 25)  # 默认(3x3)
+binaryIMG = cv2.dilate(binaryIMG, None, iterations = 26)  # 默认(3x3)
 cv2.imwrite("Dilate_0.jpg", binaryIMG)
 binaryIMG = cv2.erode(binaryIMG, None, iterations= 30)
 cv2.imwrite("Erode_0.jpg", binaryIMG)
@@ -170,21 +165,33 @@ clone = image.copy()
 # ellipse = cv2.fitEllipse(cnts)
 # img = cv2.ellipse(clone,ellipse,(0,255,0),2)
 # cv2.imwrite("tmp.jpg", img)
-
+max_area = 0
+tmp_c = None
 for c in cnts:
-    peri = cv2.arcLength(c, True)
+    area = cv2.contourArea(c)
+
+    if area >= max_area:
+        max_area = area
+        tmp_c = c
+
+    #cv2.drawContours(clone, [box], -1, (0, 255, 0), 2)
     # approx = cv2.approxPolyDP(c, 0.01 * peri, False) #取1%為\epsilon 值
 
     # (x, y, w, h) = cv2.boundingRect(approx)
     # cv2.rectangle(clone, (x, y), (x + w, y + h), (0, 255, 0), 2)
-    box = cv2.minAreaRect(c)
 
-    box = np.int0(cv2.boxPoints (box))  #–> int0會省略小數點後方的數字
-
-    cv2.drawContours(clone, [box], -1, (0, 255, 0), 2)
     # ellipse = cv2.fitEllipse(c)
     # cv2.ellipse(clone, ellipse, (0, 255, 0), 2)
     # cv2.putText(clone, "Vertex:"+str(len(approx)), (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+box = cv2.minAreaRect(tmp_c)
+
+ellipse = cv2.fitEllipse(tmp_c)
+
+cv2.ellipse(clone, ellipse, (0, 255, 0), 2)
+
+box = np.int0(cv2.boxPoints (box))  #–> int0會省略小數點後方的數字
+
+cv2.drawContours(clone, [box], -1, (255, 0, 0), 2)
 cv2.imwrite("tmp.jpg", clone)
 
 # for c in cnts:        
